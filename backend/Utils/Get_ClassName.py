@@ -10,15 +10,69 @@ def GetClassnames(Article):
         "Authorization": f"Bearer {os.getenv('HF_TOKEN')}",
     }
 
+    types = [
+        "support",
+        "billing",
+        "payment",
+        "account",
+        "security",
+        "privacy",
+        "shipping",
+        "returns",
+        "warranty",
+        "troubleshooting",
+        "setup",
+        "onboarding",
+        "cancellation",
+        "subscription",
+        "updates",
+        "feedback",
+        "promotions",
+        "technical",
+        "authentication",
+        "compliance",
+        "guidelines",
+        "documentation",
+        "contact",
+        "analytics",
+        "performance",
+        "optimization",
+        "integration",
+        "features",
+        "permissions",
+        "reporting",
+        "maintenance",
+        "inventory",
+        "messaging",
+        "notifications",
+        "accessibility",
+        "customization",
+        "automation",
+        "auditing",
+        "governance",
+        "roadmap",
+        "community",
+        "moderation",
+        "deployment",
+        "backup",
+        "migration",
+        "monitoring",
+        "verification",
+        "policies",
+        "training",
+        "insights"
+    ]
+
     def query(payload):
         response = requests.post(API_URL, headers=headers, json=payload)
         return response.json()
 
     output = query({
         "inputs": Article,
-        "parameters": {"candidate_labels": ["refund", "legal", "faq"]},
+        "parameters": {"candidate_labels": types},
     })
 
     Class = output[0]['label']
 
-    return Class, Article
+    return Class
+

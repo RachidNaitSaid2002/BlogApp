@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from auth.auth import get_password_hash, get_uer, verify_jwt, create_jwt, verify_password
+from Utils.Get_resum import Get_Resum
 
 load_dotenv()
 
@@ -54,4 +55,11 @@ async def login(user: UserLogin):
         else:
             return  {'message':'Password incorrect !!'}
     return {'message':'Username ou Password incorrect !!'}
+
+# Predict ---------------------------------------------------------------------- :
+@app.post('/Summary')
+async def summary(article: str):
+    summary, classe, mode = Get_Resum(article)
+    return summary
+
 
