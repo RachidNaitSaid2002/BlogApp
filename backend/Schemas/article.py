@@ -16,6 +16,9 @@ class ArticleOut(ArticleBase):
 
 class ArticleIn(BaseModel):
     article: str
+    Creativite_level:float
+    Thinking:int
+
 
 
 

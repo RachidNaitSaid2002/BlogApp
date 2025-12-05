@@ -6,12 +6,11 @@ from fastapi import FastAPI, HTTPException, status, Depends
 from Models.Articles import Articles
 from Models.Users import User
 from Schemas.article import ArticleBase, ArticleIn, ArticleOut
-from Schemas.user import UserCreate,UserOut,UserLogin
+from Schemas.user import UserCreate,UserLogin
 from fastapi.security import HTTPBearer, HTTPBasicCredentials
 from dotenv import load_dotenv
 import os
 from fastapi.middleware.cors import CORSMiddleware
-
 
 load_dotenv()
 

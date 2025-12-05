@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, status, Depends
 from Models.Articles import Articles
 from Models.Users import User
 from Schemas.article import ArticleBase, ArticleIn, ArticleOut
-from Schemas.user import UserCreate,UserOut,UserLogin
+from Schemas.user import UserCreate, UserLogin
 from fastapi.security import HTTPBearer, HTTPBasicCredentials
 from dotenv import load_dotenv
 import os
@@ -58,8 +58,28 @@ async def login(user: UserLogin):
 
 # Predict ---------------------------------------------------------------------- :
 @app.post('/Summary')
-async def summary(article: str):
-    summary, classe, mode = Get_Resum(article)
-    return summary
+async def summary(article: ArticleIn, Mytoken: HTTPBasicCredentials = Depends(bearer_scheme)):
+    email = verify_jwt(Mytoken.credentials)
+    user = get_uer(db, email)
+    summary, classe, ton = Get_Resum(article.article,article.Thinking,article.Creativite_level)
+    db_article = Articles(user_id=user.id, ton=ton, resume=summary, class_name=classe, article=article)
+    db.add(db_article)
+    db.commit()
+    db.refresh(db_article)
+
+    return article
 
 
+# Historique ---------------------------------------------------------------------:
+@app.post('/Sumary/{id}')
+async def history(id:int, Mytoken: HTTPBasicCredentials = Depends(bearer_scheme)):
+    email = verify_jwt(Mytoken)
+    user = get_uer(db, email)
+    if id == user.id:
+        Historique = db.query(Articles).filter(Articles.user_id == id).order_by(Articles.created_at.desc()).limit(5).all()
+        if not Historique:
+            return {'message':'No Historique for this user'}
+        else:
+            return Historique
+    else:
+        return {'message':'you dont have acces'}

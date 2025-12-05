@@ -14,14 +14,6 @@ class UserCreate(UserBase):
     class Config:
         orm_mode = True
 
-class UserOut(UserBase):
-    id: int
-    active: bool
-    predictions: List[ArticleOut] = []
-
-    class Config:
-        orm_mode = True
-
     
 class UserLogin(BaseModel):
     email: str

@@ -9,7 +9,7 @@ class Articles(Base):
     id = Column(Integer, primary_key=True, index=True)
     article = Column(Text, nullable=False)
     class_name = Column(String(100), nullable=False)
-    resume = Column(String(100), nullable=False)
+    resume = Column(Text, nullable=False)
     ton = Column(String(100), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
