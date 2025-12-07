@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "components/hero.tsx", "components/work.tsx"  ],
   "exclude": ["node_modules"]
 }

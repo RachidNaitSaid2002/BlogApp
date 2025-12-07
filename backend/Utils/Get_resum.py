@@ -1,4 +1,4 @@
-from Get_ClassName import GetClassnames
+from .Get_ClassName import GetClassnames
 from google import genai
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
