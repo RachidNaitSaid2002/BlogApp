@@ -1,0 +1,52 @@
+services:
+
+  db:
+    image: postgres:15
+    container_name: BlogApp-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${user}
+      POSTGRES_PASSWORD: ${password}
+      POSTGRES_DB: ${database}
+      POSTGRES_HOST: ${host}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - fullnet
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: BlogApp-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db    
+    networks:
+      - fullnet
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: BlogApp-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - fullnet
+
+networks:
+  fullnet:
+    driver: bridge
+
+volumes:
+  pgdata:

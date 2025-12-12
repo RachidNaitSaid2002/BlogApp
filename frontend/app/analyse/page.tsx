@@ -4,7 +4,6 @@ import React, { useState, useMemo, useEffect } from "react"
 import { Plus, Trash2, Copy, Menu, X, Sparkles, FileText, Zap, Check, User, LogOut, Text, AudioLines, Link as LinkIcon, History } from "lucide-react"
 import Image from "next/image"
 import ThinkingSwitch from "@/components/ui/switch"
-import { Suspense } from "react"
 import { useRouter } from "next/navigation"
 import { checkAuth } from "@/lib/auth"
 import Link from 'next/link';

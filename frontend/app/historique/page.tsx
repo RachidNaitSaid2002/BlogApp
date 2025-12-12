@@ -220,7 +220,7 @@ export default function HistoriquePage() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-grow overflow-auto p-6 md:p-12">
+            <main className="flex-grow p-6 md:p-12 h-screen">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="mb-8">
@@ -254,7 +254,7 @@ export default function HistoriquePage() {
                             {articles.map((article: Article) => (
                                 <div
                                     key={article.id}
-                                    className="bg-zinc-900/60 border border-zinc-800 rounded-lg p-6 hover:border-zinc-700 transition-all cursor-pointer"
+                                    className="bg-zinc-900/60 border border-zinc-800 rounded-lg p-6 hover:border-zinc-700 transition-all cursor-pointer  max-h-96"
                                     onClick={() => setSelectedArticle(selectedArticle?.id === article.id ? null : article)}
                                 >
                                     <div className="flex items-start justify-between mb-4">
