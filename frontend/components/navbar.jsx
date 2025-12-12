@@ -35,14 +35,14 @@ export function Navbar() {
       <div
         className={cn(
           "max-w-7xl mx-auto rounded-full transition-all duration-300 flex items-center justify-between px-6 py-3",
-          "glass bg-black/40"
+          "glass bg-black"
         )}
       >
         <Link href="/" className="text-2xl font-bold tracking-tighter relative z-50">
           <Image
             src="/images/Logo/logo.png"
             alt="Logo"
-            width={120}
+            width={100}
             height={40}
           />
         </Link>

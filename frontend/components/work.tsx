@@ -58,12 +58,18 @@ const projects = [
 
 export function Work() {
   return (
-    <section id="work" className="py-24 md:py-32 bg-zinc-950 text-white overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-blue-900/10 rounded-full blur-[180px] opacity-30 pointer-events-none" />
+    <section id="work" className="py-24 md:py-32 bg-[#000000ff] text-white relative overflow-hidden">
+            
+          <div
+            className="
+              absolute inset-0
+              bg-transparent
+              bg-[linear-gradient(to_right,#80808012_3px,transparent_3px),linear-gradient(to_bottom,#80808012_3px,transparent_3px)]
+              bg-[length:24px_24px,24px_24px]
+            "
+          />
 
       <div className="container mx-auto px-6 relative z-10">
-
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
           <motion.div
@@ -83,7 +89,7 @@ export function Work() {
         {/* Projects List with Alternating Layout */}
         <div className="space-y-20">
           {projects.map((project, index) => {
-            const isImageFirst = index % 2 !== 0; // Alternating logic
+            const isImageFirst = index % 2 !== 0; 
 
             return (
               <motion.div

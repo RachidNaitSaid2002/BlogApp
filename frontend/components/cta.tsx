@@ -12,7 +12,7 @@ const CornerPlus = ({ className }: { className?: string }) => (
 
 export function Cta() {
   return (
-    <section id="contact" className="py-32 bg-zinc-950">
+    <section id="contact" className="py-32 bg-[#000000ff]">
       <div className="container mx-auto px-6 text-center relative z-10">
         <h2 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight">
           Ready to Take the <br />

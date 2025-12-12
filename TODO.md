@@ -1,0 +1,2 @@
+- [x] Fix cookie reading in /Summary endpoint: Use Cookie dependency instead of response.cookies
+- [x] Fix cookie reading in /test-cookie endpoint: Use Cookie dependency instead of response.cookies

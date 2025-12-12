@@ -12,6 +12,8 @@ type InfiniteSliderProps = {
   direction?: 'horizontal' | 'vertical';
   reverse?: boolean;
   className?: string;
+  speed?: number;
+  speedOnHover?: number;
 };
 
 export function InfiniteSlider({

@@ -120,37 +120,7 @@ Line.prototype = {
     },
 };
 
-// @ts-ignore
-function onMousemove(e) {
-    function o() {
-        lines = [];
-        for (let e = 0; e < E.trails; e++)
-            lines.push(new Line({ spring: 0.45 + (e / E.trails) * 0.025 }));
-    }
-    // @ts-ignore
-    function c(e) {
-        e.touches
-            ? // @ts-ignore
-            ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY))
-            : // @ts-ignore
-            ((pos.x = e.clientX), (pos.y = e.clientY)),
-            e.preventDefault();
-    }
-    // @ts-ignore
-    function l(e) {
-        // @ts-ignore
-        1 == e.touches.length &&
-            ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY));
-    }
-    document.removeEventListener("mousemove", onMousemove),
-        document.removeEventListener("touchstart", onMousemove),
-        document.addEventListener("mousemove", c),
-        document.addEventListener("touchmove", c),
-        document.addEventListener("touchstart", l),
-        c(e),
-        o(),
-        render();
-}
+
 
 function render() {
     // @ts-ignore
@@ -199,42 +169,37 @@ var ctx,
         dampening: 0.025,
         tension: 0.99,
     };
-function Node() {
-    this.x = 0;
-    this.y = 0;
-    this.vy = 0;
-    this.vx = 0;
-}
 
-const renderCanvas = function () {
-    // @ts-ignore
-    ctx = document.getElementById("canvas").getContext("2d");
-    ctx.running = true;
-    ctx.frame = 1;
-    f = new n({
-        phase: Math.random() * 2 * Math.PI,
-        amplitude: 85,
-        frequency: 0.0015,
-        offset: 285,
-    });
-    document.addEventListener("mousemove", onMousemove);
-    document.addEventListener("touchstart", onMousemove);
-    document.body.addEventListener("orientationchange", resizeCanvas);
-    window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("focus", () => {
-        // @ts-ignore
-        if (!ctx.running) {
-            // @ts-ignore
-            ctx.running = true;
-            render();
-        }
-    });
-    window.addEventListener("blur", () => {
-        // @ts-ignore
-        ctx.running = true;
-    });
-    resizeCanvas();
-};
+
+// const renderCanvas = function () {
+//     // @ts-ignore
+//     ctx = document.getElementById("canvas").getContext("2d");
+//     ctx.running = true;
+//     ctx.frame = 1;
+//     f = new n({
+//         phase: Math.random() * 2 * Math.PI,
+//         amplitude: 85,
+//         frequency: 0.0015,
+//         offset: 285,
+//     });
+//     document.addEventListener("mousemove", onMousemove);
+//     document.addEventListener("touchstart", onMousemove);
+//     document.body.addEventListener("orientationchange", resizeCanvas);
+//     window.addEventListener("resize", resizeCanvas);
+//     window.addEventListener("focus", () => {
+//         // @ts-ignore
+//         if (!ctx.running) {
+//             // @ts-ignore
+//             ctx.running = true;
+//             render();
+//         }
+//     });
+//     window.addEventListener("blur", () => {
+//         // @ts-ignore
+//         ctx.running = true;
+//     });
+//     resizeCanvas();
+// };
 
 import { ReactTyped } from "react-typed";
 
@@ -319,4 +284,4 @@ function ShineBorder({
 
 
 
-export { renderCanvas, TypeWriter, ShineBorder }
+export { TypeWriter, ShineBorder }

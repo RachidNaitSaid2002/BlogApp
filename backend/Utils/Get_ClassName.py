@@ -37,42 +37,22 @@ def GetClassnames(Article):
         "analytics",
         "performance",
         "optimization",
-        "integration",
-        "features",
-        "permissions",
-        "reporting",
-        "maintenance",
-        "inventory",
-        "messaging",
-        "notifications",
-        "accessibility",
-        "customization",
-        "automation",
-        "auditing",
-        "governance",
-        "roadmap",
-        "community",
-        "moderation",
-        "deployment",
-        "backup",
-        "migration",
-        "monitoring",
-        "verification",
-        "policies",
-        "training",
-        "insights"
     ]
 
-    def query(payload):
-        response = requests.post(API_URL, headers=headers, json=payload)
-        return response.json()
-
-    output = query({
+    payload = {
         "inputs": Article,
         "parameters": {"candidate_labels": types},
-    })
+    }
 
-    Class = output[0]['label']
+    response = requests.post(API_URL, headers=headers, json=payload)
 
-    return Class
+    if response.status_code != 200:
+        raise ValueError(f"HuggingFace API error: {response.status_code}, {response.text}")
 
+    output = response.json()
+
+    # output is a list: [{"label": "...", "score": ...}, ...]
+    return output[0]["label"]
+
+if __name__ == '__main__':
+    print(GetClassnames("I need help with my account billing and payment issues."))

@@ -1,220 +1,387 @@
 "use client"
 
-import React, { useState } from "react"
-import { motion } from "framer-motion"
-import { Plus, Play, Trash2, Copy, LogOut, History, FileText } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Navbar } from "@/components/navbar"
-import Link from "next/link"
+import React, { useState, useMemo, useEffect } from "react"
+import { Plus, Trash2, Copy, Menu, X, Sparkles, FileText, Zap, Check, User, LogOut, Text, AudioLines, Link as LinkIcon, History } from "lucide-react"
 import Image from "next/image"
+import ThinkingSwitch from "@/components/ui/switch"
+import { Suspense } from "react"
+import { useRouter } from "next/navigation"
+import { checkAuth } from "@/lib/auth"
+import Link from 'next/link';
 
-const CornerPlus = ({ className }: { className?: string }) => (
-    <Plus
-        strokeWidth={3}
-        className={cn("absolute w-7 h-7 text-zinc-700 transition-colors duration-300", className)}
-    />
-)
 
 export default function SummarizePage() {
-    const [input, setInput] = useState<string>("")
-    const [output, setOutput] = useState<string>("")
-    const [creativity, setCreativity] = useState<number>(40) // 0 - 100
-    const [thinking, setThinking] = useState<"High" | "Medium" | "Low">("Medium")
-    const [copied, setCopied] = useState<boolean>(false)
+    const router = useRouter()
+    const [isAuthChecking, setIsAuthChecking] = useState(true)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+    const [Creativity, setCreativity] = useState(40)
+    const [Thinking, setThinking] = useState(false)
+    const [InputText, setInputText] = useState("")
+    const [OutputText, setOutputText] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
+    const [class_name, setClass_name] = useState("")
+    const [ton, setTon] = useState("")
+    const [userName, setUserName] = useState("User")
 
-    // Naive extractive summarizer (client-side). Replace with API call if needed.
-    const summarizeText = (text: string) => {
-        if (!text.trim()) return ""
+    // Get user information from localStorage
+    useEffect(() => {
+        const userStr = localStorage.getItem('user')
+        if (userStr) {
+            const user = JSON.parse(userStr)
+            setUserName(user.full_name || user.username || "User")
+        }
+    }, [])
 
-        // split into sentences
-        const sentences = text
-            .replace(/\n+/g, " ")
-            .split(/(?<=[.?!])\s+/)
-            .filter(s => s.trim().length > 0)
+    // Check authentication on mount
+    useEffect(() => {
+        const verifyAuth = async () => {
+            const isAuthenticated = await checkAuth()
+            if (!isAuthenticated) {
+                router.push('/login')
+            } else {
+                setIsAuthChecking(false)
+            }
+        }
+        verifyAuth()
+    }, [router])
 
-        const total = sentences.length
+    // Calculate Temperateur and Thing
+    const Temperateur = ((Creativity / 5) / 10).toFixed(1)
+    const Thing = Thinking ? 0 : 1
 
-        // determine how many sentences to keep
-        // creativity: higher -> shorter/concise (fewer sentences)
-        // thinking: High -> keep more sentences (more thorough)
-        const thinkingFactor = thinking === "High" ? 1.0 : thinking === "Medium" ? 0.75 : 0.5
-        const baseKeep = Math.max(1, Math.ceil(total * (0.2 + (1 - creativity / 100) * 0.6) * thinkingFactor))
+    // Clear Input and Output
+    const Clear = (e: React.FormEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        setInputText("");
+    }
 
-        // Simple scoring: prefer earlier sentences and slightly weight longer sentences
-        const scored = sentences.map((s, i) => {
-            const lengthScore = Math.min(1, s.split(" ").length / 40) // longer sentences get slight boost
-            const positionScore = 1 - i / Math.max(1, total - 1) // earlier sentences score higher
-            // creativity nudges randomness — we add a tiny variation based on creativity
-            const randomness = (Math.random() - 0.5) * (1 - creativity / 150)
-            return { idx: i, sentence: s, score: 0.6 * positionScore + 0.4 * lengthScore + randomness }
+    // Word Counter
+    const WordsCounter = (text: string) => {
+        return text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+    }
+
+    useEffect(() => {
+        if (InputText.length === 0) {
+            setOutputText("");
+        }
+    })
+
+    const CopieText = (e: React.FormEvent<HTMLButtonElement>) => {
+        navigator.clipboard.writeText(OutputText);
+    }
+
+
+    // Toggle Sidebar
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+
+    const SubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+        setIsLoading(true)
+        e.preventDefault();
+        const Data = {
+            "article": InputText,
+            "Creativite_level": Temperateur,
+            "Thinking": Thing
+        }
+
+        const response = await fetch('http://127.0.0.1:8000/Summary', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(Data),
+
         })
 
-        scored.sort((a, b) => b.score - a.score)
 
-        const selected = scored.slice(0, baseKeep).sort((a, b) => a.idx - b.idx) // keep original order
-        return selected.map(s => s.sentence).join(" ").trim()
+        const result = await response.json();
+        if (response.ok) {
+            setIsLoading(false);
+            console.log(" Summary Response : ", result);
+            setOutputText(result.resume);
+            console.log(" Summary : ", OutputText);
+            setClass_name(result.class_name);
+            setTon(result.ton);
+        } else {
+            setOutputText("An error occurred while generating the summary.");
+            console.error("Error generating summary:", result);
+            setIsLoading(false);
+        }
+
     }
 
-    const handleSummarize = (e?: React.FormEvent) => {
-        e?.preventDefault()
-        const summary = summarizeText(input)
-        setOutput(summary)
-        setCopied(false)
-    }
 
-    const handleClear = () => {
-        setInput("")
-        setOutput("")
-        setCopied(false)
-    }
-
-    const handleCopy = async () => {
-        if (!output) return
+    const Logout = async (e: React.FormEvent<HTMLButtonElement>) => {
+        e.preventDefault();
         try {
-            await navigator.clipboard.writeText(output)
-            setCopied(true)
-            setTimeout(() => setCopied(false), 1500)
-        } catch {
-            // ignore
+            const response = await fetch('http://127.0.0.1:8000/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+
+            if (response.ok) {
+                // Logout successful (HTTP 200)
+                const data = await response.json();
+                console.log(data.message);
+                // Clear user data from localStorage
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            } else {
+                // Logout failed due to a server-side issue (e.g., 400, 500)
+                let errorMessage = 'Logout failed.';
+                try {
+                    // Try to get a specific error message from the response body
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || errorData.message || errorMessage;
+                } catch (jsonError) {
+                    // If the response is not JSON, use the status text
+                    errorMessage += ` Status: ${response.statusText}`;
+                }
+                console.error(errorMessage);
+                alert(errorMessage); // Notify the user
+            }
+        } catch (networkError) {
+            // Handle network issues (server is unreachable)
+            console.error('Network Error during logout:', networkError);
+            alert('Could not connect to the server. Please check your connection.');
         }
     }
 
-    const sentenceCount = (txt: string) =>
-        txt
-            .replace(/\n+/g, " ")
-            .split(/(?<=[.?!])\s+/)
-            .filter(Boolean).length
+    // Show loading state while checking authentication
+    if (isAuthChecking) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-zinc-400">Verifying authentication...</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
-        
-        <section className="min-h-screen flex items-center justify-center justify-center bg-zinc-950 text-white py-24 px-6 relative overflow-hidden">
-                {/* subtle grid background */}
+        <div className="min-h-screen flex bg-zinc-950 text-white relative overflow-hidden">
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 bg-black er-events-none" />
+
+            {/* Sidebar Toggle - Always visible on mobile */}
+            <button
+                onClick={toggleSidebar}
+                className="fixed top-4 left-4 z-50 p-3 md:hidden bg-blue-600 backdrop-blur-sm rounded-lg shadow-lg hover:bg-blue-700 transition-all border border-blue-500"
+                aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+            >
+                {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            {/* Overlay for mobile sidebar */}
+            {isSidebarOpen && (
                 <div
-                    className="absolute inset-0 bg-transparent bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[length:24px_24px,24px_24px] pointer-events-none"
-                    aria-hidden
+                    onClick={toggleSidebar}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 md:hidden"
                 />
+            )}
 
-                <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative w-full max-w-4xl bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 md:p-10 backdrop-blur-sm shadow-lg"
-                >
-                    <CornerPlus className="-top-5 -left-5" />
-                    <CornerPlus className="-top-5 -right-5" />
-                    <CornerPlus className="-bottom-5 -left-5" />
-                    <CornerPlus className="-bottom-5 -right-5" />
-
-                    {/* Header */}
-                    <div className="mb-6">
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Summarize</h1>
-                        <div className="h-1 w-28 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-4 mb-4" />
-                        <p className="text-zinc-400">Paste or type your text, tweak model parameters, and get a clear, concise summary.</p>
+            {/* Sidebar */}
+            <aside className={`w-64 border-r border-zinc-800/50 bg-[#0e0e10] backdrop-blur-sm flex-shrink-0 p-6 pt-6 z-40 transition-transform duration-300 ease-in-out
+                    md:static  md:translate-x-0  h-screen
+                    ${isSidebarOpen ? 'fixed top-0 left-0 h-full translate-x-0' : 'fixed top-0 left-0  -translate-x-full md:translate-x-0'}`}>
+                <div className="space-y-6 flex flex-col gap-8 justify-between h-full">
+                    <div>
+                        <Image
+                            src="/images/Logo/logo.png"
+                            alt="Logo"
+                            width={140}
+                            height={40}
+                            className="mb-15"
+                        />
+                        <ul className="space-y-2">
+                            <li>
+                                <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-zinc-800/50 text-blue-400 hover:bg-zinc-800 transition">
+                                    <Text className="w-4 h-4" />
+                                    <span className="text-sm font-medium">Summarize Text</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition">
+                                    <FileText className="w-4 h-4" />
+                                    <span className="text-sm">Summarize Files</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition">
+                                    <AudioLines className="w-4 h-4" />
+                                    <span className="text-sm">Summarize Audio</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition">
+                                    <LinkIcon className="w-4 h-4" />
+                                    <span className="text-sm">Summarize Webpages</span>
+                                </a>
+                            </li>
+                        </ul>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Left: Input + Controls */}
-                        <div>
-                            <label className="text-sm text-zinc-300 mb-2 block">Input</label>
-                            <textarea
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Paste article, notes, or text to summarize..."
-                                className="w-full min-h-[260px] max-h-[520px] resize-vertical bg-zinc-900/40 border border-zinc-800 rounded-lg p-4 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
-                            />
+                    <div>
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Quick LINKS</h3>
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-start px-3 py-2 bg-zinc-800/30 rounded">
+                                <span className="text-zinc-200 font-mono"><User className="text-zinc-500 w-5 h-5" /></span>
+                                <span className="text-zinc-400 ml-5">{userName}</span>
+                            </div>
+                            <Link href="/historique" className="flex justify-start px-3 py-2 bg-zinc-800/30 rounded w-full mt-2 hover:bg-zinc-800/50 transition cursor-pointer">
+                                <span className="text-zinc-200 font-mono"><History className="text-zinc-500 w-5 h-5" /></span>
+                                <span className="text-zinc-400 ml-5">Historique</span>
+                            </Link>
+                            <button onClick={Logout} className="flex justify-start px-3 py-2 bg-zinc-800/30 rounded w-full mt-2 hover:bg-zinc-800/50 transition cursor-pointer">
+                                <span className="text-zinc-200 font-mono"><LogOut className="text-zinc-500 w-5 h-5" /></span>
+                                <span className="text-zinc-400 ml-5">Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
 
-                            {/* Controls */}
-                            <div className="mt-4 flex flex-col gap-4">
+            {/* Main Content */}
+            <main className="flex-grow flex items-center justify-center   overflow-auto ">
+                <div className=" w-full md:max-w-8xl">
+                    <div className="relative  p-6  h-screen  space-y-8">
+
+                        {/* Header */}
+                        <div className="mb-8 mt-12">
+                            <div className="flex items-center gap-3 mb-3">
+                                <Text className="w-8 h-8 text-white" />
+                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                                    Summarize Text
+                                </h1>
+                            </div>
+                            <div className="h-1 w-28 bg-white rounded-full mb-4" />
+                            <p className="text-zinc-400 text-sm md:text-base">Transform lengthy content into clear, concise summaries with AI-powered extraction.</p>
+                        </div>
+
+                        {/* Content Grid */}
+                        <form onSubmit={SubmitHandler} className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                            {/* Input Section */}
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="text-xs text-zinc-400 mb-1 block">Creativity</label>
-                                    <div className="flex items-center gap-4">
-                                        <input
-                                            type="range"
-                                            min={0}
-                                            max={100}
-                                            value={creativity}
-                                            onChange={(e) => setCreativity(Number(e.target.value))}
-                                            className="w-full accent-blue-500"
-                                        />
-                                        <div className="w-14 text-right text-sm font-mono text-zinc-300">{creativity}%</div>
+                                    <div className="flex items-start justify-between mb-2">
+                                        <label className="text-sm font-medium text-zinc-300 mb-2 block">Input Text</label>
+                                        <button
+                                            onClick={Clear}
+                                            className="flex items-center gap-2 bg-zinc-800 mb-2 hover:bg-zinc-700 disabled:bg-zinc-800/50 text-zinc-200 disabled:text-zinc-500 py-2 px-3 rounded-lg border border-zinc-700 transition-all disabled:cursor-not-allowed text-xs font-medium cursor-pointer"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Clear
+                                        </button>
                                     </div>
-                                    <p className="text-xs text-zinc-500 mt-1">Higher values produce more concise / creative extracts.</p>
+
+                                    <textarea
+                                        placeholder="Paste or type your text here... The more content you provide, the better the summary will be."
+                                        className="w-full min-h-[280px] max-h-[520px] resize-y bg-zinc-900/60 border border-zinc-700 rounded-lg p-4 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm leading-relaxed"
+                                        value={InputText}
+                                        onChange={(e) => setInputText(e.target.value)}
+                                    />
+                                    <div className="flex items-center justify-between mt-2 text-xs">
+                                        <span className="text-zinc-400 font-mono">{WordsCounter(InputText)} words · {InputText.length} chars</span>
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label className="text-xs text-zinc-400 mb-1 block">Thinking</label>
-                                    <select
-                                        value={thinking}
-                                        onChange={(e) => setThinking(e.target.value as any)}
-                                        className="bg-zinc-900/40 border border-zinc-800 rounded-lg py-2 px-3 text-zinc-100"
-                                    >
-                                        <option value="High">High — thorough</option>
-                                        <option value="Medium">Medium — balanced</option>
-                                        <option value="Low">Low — fast</option>
-                                    </select>
-                                    <p className="text-xs text-zinc-500 mt-1">Higher thinking keeps more detail and context.</p>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center gap-3">
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handleSummarize}
-                                        className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg"
-                                    >
-                                        <Play className="w-4 h-4" /> Summarize
-                                    </motion.button>
-
-                                    <button
-                                        onClick={handleClear}
-                                        className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-4 rounded-lg border border-zinc-700"
-                                    >
-                                        <Trash2 className="w-4 h-4" /> Clear
-                                    </button>
-
-                                    <div className="ml-auto text-xs text-zinc-400 font-mono">
-                                        {input.trim() ? `${input.trim().split(/\s+/).length} words • ${sentenceCount(input)} sentences` : "0 words"}
+                                {/* Controls */}
+                                <div className="space-y-4  rounded-lg p-4">
+                                    <div className="flex items-center justify-between gap-6 w-full">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className="text-xs font-medium text-zinc-300">Creativity</label>
+                                                <span className="text-xs font-mono text-blue-400">{Creativity}%</span>
+                                            </div>
+                                            <input
+                                                value={Creativity}
+                                                onChange={(e) => setCreativity(Number(e.target.value))}
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                            />
+                                            <p className="text-xs text-zinc-500 mt-1">Higher values create more concise, creative summaries</p>
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <div>
+                                                <label className="text-xs font-medium text-zinc-300 mb-2 block">Thinking</label>
+                                                <ThinkingSwitch setIsThinking={setThinking} isThinking={Thinking} />
+                                                <p className="text-xs text-zinc-500 mt-1">Controls the depth and detail of the summary</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Right: Output */}
-                        <div>
-                            <div className="flex items-start justify-between mb-3">
-                                <div>
-                                    <label className="text-sm text-zinc-300 block">Summary</label>
-                                    <p className="text-xs text-zinc-500">Copy, refine, or regenerate with new parameters.</p>
-                                </div>
+                            {/* Output Section */}
+                            <div className="space-y-4">
+                                <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                        <label className="text-sm font-medium text-zinc-300 block">Summary Output</label>
+                                        <p className="text-xs text-zinc-500 mt-1">Your generated summary appears here</p>
+                                    </div>
 
-                                <div className="flex items-center gap-2">
+
                                     <button
-                                        onClick={handleCopy}
-                                        className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded-lg border border-zinc-700"
+                                        className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-800/50 text-zinc-200 disabled:text-zinc-500 py-2 px-3 rounded-lg border border-zinc-700 transition-all disabled:cursor-not-allowed text-xs font-medium"
                                         title="Copy summary"
                                     >
                                         <Copy className="w-4 h-4" />
-                                        <span className="text-xs">{copied ? "Copied" : "Copy"}</span>
+                                        Copy
                                     </button>
                                 </div>
-                            </div>
 
-                            <div className="min-h-[260px] max-h-[520px] overflow-auto bg-zinc-900/40 border border-zinc-800 rounded-lg p-4 text-zinc-100">
-                                {output ? (
-                                    <p className="leading-relaxed">{output}</p>
-                                ) : (
-                                    <p className="text-zinc-500">Your summary will appear here after you click “Summarize”.</p>
-                                )}
-                            </div>
+                                <div className="min-h-[280px] max-h-[520px] overflow-auto bg-zinc-900/60 border border-zinc-700 rounded-lg p-4 text-sm leading-relaxed flex items-center justify-center">
 
-                            <div className="mt-3 text-xs text-zinc-400 flex justify-between">
-                                <div>Sentences: {output ? sentenceCount(output) : 0}</div>
-                                <div>Words: {output ? (output.trim().split(/\s+/).length) : 0}</div>
+                                    <div className="flex flex-col items-center justify-center h-full  ">
+                                        {OutputText ? (
+                                            <p className="text-zinc-200 text-lg whitespace-pre-line">{OutputText}</p>
+                                        ) : isLoading ? (
+                                            <>
+                                                <FileText className="w-12 h-12 text-zinc-700 mb-3" />
+                                                <p className="text-zinc-500 text-sm">Generating your summary...</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FileText className="w-12 h-12 text-zinc-700 mb-3" />
+                                                <p className="text-zinc-500 text-sm">Your summary will appear here</p>
+                                                <p className="text-zinc-600 text-xs mt-1">Click "Summarize" to generate</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 rounded-lg">
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        {isLoading ? (
+                                            <button type="submit" disabled className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-zinc-700 disabled:to-zinc-700 text-white font-semibold py-2.5 px-5 rounded-lg transition-all disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 disabled:shadow-none cursor-not-allowed">
+                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                Pleas Wait
+                                            </button>
+
+                                        ) : (
+                                            <button type="submit" className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-zinc-700 disabled:to-zinc-700 text-white font-semibold py-2.5 px-5 rounded-lg transition-all disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 disabled:shadow-none cursor-pointer">
+                                                <Sparkles className="w-4 h-4" />
+                                                Summarize
+                                            </button>
+                                        )}
+                                    </div>
+                                    {/* Summary Info */}
+                                    {OutputText && !isLoading && (
+                                        <div className="text-md text-zinc-500 mt-7 space-y-1">
+                                            <p>Summary Tone: <span className="text-zinc-400 font-mono ">{ton}</span></p>
+                                            <p>Class Name: <span className="text-zinc-400 font-mono">{class_name}</span></p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
-                </motion.div>
-            </section>
-
+                </div>
+            </main>
+        </div>
     )
 }

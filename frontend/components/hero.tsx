@@ -3,14 +3,15 @@
 import Image from "next/image";
 import { useEffect } from "react";
 import Link from "next/link";
-import { renderCanvas, ShineBorder, TypeWriter } from "@/components/ui/hero-designali";
+import { ShineBorder, TypeWriter } from "@/components/ui/hero-designali";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { Boxes } from "./ui/shadcn-io/background-boxes";
+import { WavyBackground } from "./ui/shadcn-io/wavy-background";
 
-// --- Helper Component ---
-// Defines the technical 'crop mark' Plus icon (required for the requested style)
-// Reusable Corner Plus Component
+
+
+
 const CornerPlus = ({ className }: { className?: string }) => (
   <Plus
     strokeWidth={2}
@@ -29,15 +30,25 @@ export const Hero = () => {
     "audio files",
   ];
 
-  useEffect(() => {
-    renderCanvas();
-  }, []);
-
   return (
-    <main className="overflow-hidden bg-zinc-950">
-      <section id="home" className="relative flex min-h-screen w-full flex-col items-center justify-center py-20">
+    <main className="overflow-hidden">
+             <WavyBackground
+          backgroundFill="#000000ff"
+          colors={["#38bdf8", "#818cf8", "#c084fc", "#e879f9"]}
+          waveWidth={50}
+          blur={10}
+          speed="fast"
+          waveOpacity={0.5}
+          containerClassName="h-full w-full"
+          className="flex items-center justify-center"
+        >
+      <section id="home" className=" flex min-h-screen w-full flex-col items-center justify-center py-20">
+        <br />
+        <br />
+        <br />
         {/* Content Container */}
         <div className="flex flex-col items-center justify-center px-6 text-center z-10">
+          
           <div className="mb-6 sm:justify-center md:mb-4">
             <div className="relative flex items-center rounded-full border px-3 py-1 text-xs text-primary/60">
               Introducing Dicons.
@@ -54,9 +65,8 @@ export const Hero = () => {
               </Link>
             </div>
           </div>
-
           <div className="mx-auto max-w-5xl">
-            <div className="relative bg-zinc-900/50 border border-zinc-800 p-8 md:p-12 backdrop-blur-sm transition-colors duration-500 hover:bg-zinc-900/80 hover:border-zinc-700 border-text-red-500 relative mx-auto h-full  border py-12 p-6 [mask-image:radial-gradient(800rem_96rem_at_center,white,transparent)]">
+            <div className="relative bg-black border border-zinc-800 p-8 md:p-12 backdrop-blur-sm transition-colors duration-500 hover:bg-zinc-900/80 hover:border-zinc-700 border-text-red-500 relative mx-auto h-full  border py-12 p-6 [mask-image:radial-gradient(800rem_96rem_at_center,white,transparent)]">
               <h1 className="flex flex-col text-center text-5xl font-semibold leading-none tracking-tight md:flex-col md:text-8xl lg:flex-row lg:text-8xl">
                 <Plus
                   strokeWidth={4}
@@ -99,7 +109,7 @@ export const Hero = () => {
 
             </p>
             <div className="mt-10">
-              <Link href="/signup" target="_blank" className="relative bg-zinc-900/50 border border-zinc-800 px-6 py-3 backdrop-blur-sm transition-colors duration-500 hover:bg-zinc-900/80 hover:border-zinc-700">
+              <Link href="/signup" target="_blank" className="relative bg-black border border-zinc-800 px-6 py-3 backdrop-blur-sm transition-colors duration-500 hover:bg-zinc-900/80 hover:border-zinc-700">
                 {/* Corner Markers */}
                 <CornerPlus className="-top-3 -left-3" />
                 <CornerPlus className="-top-3 -right-3" />
@@ -111,12 +121,9 @@ export const Hero = () => {
           </div>
         </div>
 
-        {/* Canvas Background - ensure it sits behind content */}
-        <canvas
-          className="pointer-events-none absolute inset-0 mx-auto"
-          id="canvas"
-        ></canvas>
+
       </section>
+              </WavyBackground>
     </main>
   );
 };

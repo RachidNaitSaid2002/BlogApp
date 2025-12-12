@@ -1,5 +1,5 @@
 from .Get_ClassName import GetClassnames
-from google import genai
+import google.genai as genai
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 import os
@@ -27,7 +27,7 @@ def Get_Resum(Article_txt,Thinking,Creativite_level):
     """
     Role = f"""Entanque que expert: "{Classe}","""
 
-    # Creativite_level => [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+    # Creativite_level => [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2]
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(

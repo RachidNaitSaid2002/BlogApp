@@ -146,7 +146,16 @@ const CornerPlus = ({ className }: { className?: string }) => (
 
 export function Services() {
   return (
-    <section id="services" className="py-24 bg-zinc-950 text-white overflow-hidden">
+    <section id="services" className="py-2 bg-[#000000ff] text-white relative overflow-hidden">
+      
+          <div
+            className="
+              absolute inset-0
+              bg-transparent
+              bg-[linear-gradient(to_right,#80808012_3px,transparent_3px),linear-gradient(to_bottom,#80808012_3px,transparent_3px)]
+              bg-[length:24px_24px,24px_24px]
+            "
+          />
       <LogoCloud logos={logos} />
 
       <br />

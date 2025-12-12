@@ -1,16 +1,10 @@
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from dotenv import load_dotenv
-from Database.db import engine,SessionLocal,Base
-from fastapi import FastAPI, HTTPException, status, Depends
-from Models.Articles import Articles
+from fastapi import HTTPException, status
 from Models.Users import User
-from Schemas.article import ArticleBase, ArticleIn, ArticleOut
-from Schemas.user import UserCreate,UserLogin
-from fastapi.security import HTTPBearer, HTTPBasicCredentials
 from dotenv import load_dotenv
 import os
-from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
