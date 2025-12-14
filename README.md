@@ -1,4 +1,4 @@
-# SummaW
+# SummaX
 
 Bienvenue sur le projet **BlogApp**. C'est une application complète de blog comprenant une API Backend robuste et une interface Frontend moderne.
 
